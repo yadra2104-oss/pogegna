@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Пожежна безпека</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --text: #2c3e50;
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            padding: 2.5rem;
+            max-width: 800px;
+            width: 90%;
+            margin: 2rem auto;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        h1, h2 {
+            margin-top: 0;
+            color: #1a5276;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        button:hover:not(:disabled) {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .timer-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .timer-warning {
+            color: var(--danger) !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .progress-container {
+            width: 100%;
+            background: rgba(189, 195, 199, 0.3);
+            border-radius: 10px;
+            height: 12px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+            text-align: right;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid rgba(52, 152, 219, 0.2);
+            color: var(--text);
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-align: left;
+            transition: all 0.2s;
+            box-shadow: none;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: rgba(52, 152, 219, 0.1);
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        #violation-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(231, 76, 60, 0.95);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 10000;
+            font-weight: bold;
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .result-box {
+            padding: 2rem;
+            background: rgba(255,255,255,0.5);
+            border-radius: 15px;
+            margin-top: 1rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: 1.1rem;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .grade-5 { color: var(--success); font-weight: bold; }
+        .grade-4 { color: #f39c12; font-weight: bold; }
+        .grade-3 { color: #e67e22; font-weight: bold; }
+        .grade-2, .grade-1, .grade-0 { color: var(--danger); font-weight: bold; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="violation-toast"></div>
+
+    <!-- Стартовий екран -->
+    <div id="start-screen" class="glass-card">
+        <h1>🔥 Пожежна безпека</h1>
+        <p style="color: #7f8c8d; margin-bottom: 2rem;">Інтерактивний тест з безпеки життєдіяльності для студентів медичного коледжу</p>
+        
+        <div id="previous-attempt" class="hidden" style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(231, 76, 60, 0.1); border-radius: 10px; border-left: 4px solid var(--danger); text-align: left;"></div>
+
+        <div class="input-group">
+            <label for="student-name">Прізвище та ім'я</label>
+            <input type="text" id="student-name" placeholder="Наприклад: Шевченко Тарас" autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label for="student-group">Група</label>
+            <input type="text" id="student-group" placeholder="Наприклад: МД-31" autocomplete="off">
+        </div>
+        
+        <p style="font-size: 0.85rem; color: #7f8c8d; margin-top: 1rem;">
+            ⚠️ Увага: під час тесту заборонено перемикати вкладки, виходити з повноекранного режиму, використовувати гарячі клавіші (Ctrl+C, F12 тощо) або правий клік. 
+            Після 3 порушень тест буде автоматично завершено з оцінкою 0.
+        </p>
+        
+        <button id="start-btn" style="margin-top: 1.5rem; width: 100%;">Розпочати тест</button>
+    </div>
+
+    <!-- Екран тесту -->
+    <div id="test-screen" class="glass-card hidden">
+        <div class="progress-text" id="progress-text">Питання 1 з 25</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div id="timer" class="timer-display">Час: 12 с</div>
+        
+        <div class="question-text" id="question-text"></div>
+        
+        <div class="options-grid" id="options-container"></div>
+    </div>
+
+    <!-- Екран результатів -->
+    <div id="result-screen" class="glass-card hidden">
+        <h2>📊 Результати тестування</h2>
+        <div class="result-box">
+            <div class="result-item">
+                <span>ПІБ:</span>
+                <span id="res-name" style="font-weight: 600;"></span>
+            </div>
+            <div class="result-item">
+                <span>Група:</span>
+                <span id="res-group" style="font-weight: 600;"></span>
+            </div>
+            <div class="result-item">
+                <span>Дата та час:</span>
+                <span id="res-date"></span>
+            </div>
+            <div class="result-item">
+                <span>Правильних відповідей:</span>
+                <span id="res-score" style="font-weight: 600;"></span>
+            </div>
+            <div class="result-item">
+                <span>Оцінка:</span>
+                <span id="res-grade" style="font-size: 1.3rem;"></span>
+            </div>
+            <div class="result-item">
+                <span>Порушень правил:</span>
+                <span id="res-violations" style="font-weight: 600; color: var(--danger);"></span>
+            </div>
+        </div>
+        <p style="margin-top: 1.5rem; color: #7f8c8d; font-size: 0.9rem;">Результати автоматично відправлено викладачу.</p>
+    </div>
+
+    <script>
+        // ================= ДАНІ ТЕСТУ (25 питань) =================
+        const questionsData = [
+            { q: "Що таке пожежна безпека?", options: ["Стан об'єкта, за якого з імовірністю, що визначається як прийнятна, виключається можливість виникнення та розвитку пожежі", "Наявність вогнегасників у кожному приміщенні", "Повна відсутність горючих матеріалів на об'єкті", "Дотримання правил електробезпеки лише електриками"], correct: 0 },
+            { q: "Який номер телефону виклику пожежно-рятувальної служби в Україні?", options: ["101", "102", "103", "104"], correct: 0 },
+            { q: "Що з переліченого НЕ входить до 'трикутника пожежі'?", options: ["Вогнегасник", "Горюча речовина", "Окиснювач (кисень)", "Джерело запалювання"], correct: 0 },
+            { q: "Який тип вогнегасника найкраще підходить для гасіння електрообладнання під напругою?", options: ["Вуглекислотний", "Водний", "Пінний", "Пісочний"], correct: 0 },
+            { q: "Що потрібно зробити в першу чергу при виявленні пожежі в медичному закладі?", options: ["Повідомити пожежну охорону за номером 101 та активувати систему оповіщення", "Самостійно почати гасіння, не повідомляючи нікого", "Відкрити всі вікна для провітрювання приміщення", "Зібрати особисті речі та документацію"], correct: 0 },
+            { q: "Чи дозволяється використовувати ліфт під час пожежі для евакуації?", options: ["Категорично заборонено", "Дозволено, якщо пожежа не на першому поверсі", "Дозволено тільки для медичного персоналу", "Дозволено, якщо ліфт справний"], correct: 0 },
+            { q: "Що означає знак пожежної безпеки у вигляді білої стрілки на зеленому тлі?", options: ["Напрямок до евакуаційного виходу", "Місце зберігання вогнегасника", "Заборона куріння", "Місце для куріння"], correct: 0 },
+            { q: "Як правильно діяти, якщо на людині загорівся одяг?", options: ["Повалити людину на підлогу і збити полум'я щільною тканиною або катати по підлозі", "Дозволити людині бігти, щоб збити полум'я вітром", "Облити людину водою з відра, не зупиняючи її", "Використати вуглекислотний вогнегасник прямо в обличчя"], correct: 0 },
+            { q: "Яка основна небезпека під час пожежі в закритому приміщенні?", options: ["Отруєння токсичними продуктами горіння та задимлення", "Висока температура повітря", "Руйнування будівельних конструкцій", "Паніка серед людей"], correct: 0 },
+            { q: "Що забороняється робити при евакуації з задимленого приміщення?", options: ["Йти в повний зріст, не захищаючи органи дихання", "Рухатися пригнувшись або повзком", "Використовувати вологу тканину для захисту дихання", "Триматися за стіни"], correct: 0 },
+            { q: "Як часто повинен проводитися повторний інструктаж з пожежної безпеки для працівників?", options: ["Не рідше одного разу на рік", "Один раз на місяць", "Один раз на півроку", "Тільки при прийомі на роботу"], correct: 0 },
+            { q: "Що таке евакуаційний план?", options: ["Графічне зображення евакуаційних шляхів, виходів та місць розташування засобів пожежогасіння", "Список працівників, відповідальних за пожежну безпеку", "Документ про закупівлю вогнегасників", "Інструкція з надання першої медичної допомоги"], correct: 0 },
+            { q: "Який клас пожежі відповідає горінню твердих речовин (дерево, папір, тканина)?", options: ["Клас A", "Клас B", "Клас C", "Клас E"], correct: 0 },
+            { q: "Чому не можна відкривати вікна та двері в приміщенні, де виникла пожежа?", options: ["Приплив свіжого повітря (кисню) посилює горіння", "Це допоможе швидше вийти диму", "Це охолоне приміщення", "Це дозволить пожежним краще бачити вогонь"], correct: 0 },
+            { q: "Яка перша допомога надається при термічних опіках шкіри?", options: ["Охолодити місце опіку прохолодною водою протягом 15-20 хвилин", "Змастити опік олією або жирним кремом", "Проколоти пухирі, що утворилися", "Прикласти лід безпосередньо до шкіри"], correct: 0 },
+            { q: "Що означає літера 'B' на корпусі вогнегасника?", options: ["Можливість гасіння займання рідких горючих речовин", "Можливість гасіння електрообладнання", "Можливість гасіння твердих речовин", "Можливість гасіння газів"], correct: 0 },
+            { q: "Хто несе персональну відповідальність за пожежну безпеку в робочому кабінеті або палаті?", options: ["Особа, яка займає це приміщення або працює в ньому", "Тільки керівник закладу", "Прибиральниця", "Черговий охоронець"], correct: 0 },
+            { q: "Що потрібно зробити з електроприладами в кінці робочого дня?", options: ["Знеструмити (вимкнути з мережі), крім приладів цілодобової роботи", "Залишити в режимі очікування (standby)", "Накрити тканиною від пилу", "Перевести вогнегасник у режим готовності"], correct: 0 },
+            { q: "Яка мінімальна відстань повинна бути від вогнегасника до осередку пожежі для ефективного гасіння?", options: ["Згідно з інструкцією (зазвичай 2-4 метри)", "Не менше 10 метрів", "Безпосередньо впритул до вогню", "Не менше 1 метра"], correct: 0 },
+            { q: "Що заборонено зберігати на евакуаційних шляхах і виходах?", options: ["Будь-які предмети, що перешкоджають евакуації (меблі, обладнання, сміття)", "Тільки легкозаймисті рідини", "Тільки вогнегасники", "Медичні картки"], correct: 0 },
+            { q: "Як правильно користуватися порошковим вогнегасником?", options: ["Вирвати пломбу, висмикнути чеку, направити розтруб на вогонь, натиснути важіль", "Перевернути догори дном і струснути", "Відкрутити верхню кришку і висипати порошок", "Натиснути важіль, не виймаючи чеку"], correct: 0 },
+            { q: "Що таке 'пожежний сповіщувач'?", options: ["Пристрій для виявлення пожежі та передачі сигналу на приймальний прилад", "Пристрій для гасіння пожежі водою", "Знак, що вказує на вихід", "Телефон для виклику пожежної охорони"], correct: 0 },
+            { q: "Які дії медсестри/медбрата є пріоритетними під час евакуації пацієнтів при пожежі?", options: ["Евакуація пацієнтів згідно з планом, починаючи з тих, хто в безпосередній небезпеці", "Збір медичної документації", "Гасіння пожежі самотужки без виклику допомоги", "Відключення головного рубильника всього лікарняного комплексу"], correct: 0 },
+            { q: "Чи можна використовувати воду для гасіння електропроводки під напругою?", options: ["Категорично заборонено через ризик ураження електричним струмом", "Дозволено, якщо вода холодна", "Дозволено, якщо напруга не перевищує 220 В", "Дозволено, якщо використовувати розпилену воду"], correct: 0 },
+            { q: "Що слід робити, якщо шляхи евакуації відрізані вогнем та димом?", options: ["Повернутися в приміщення, щільно закрити двері, ущільнити щілини мокрими тканинами і подати сигнал рятувальникам", "Спробувати пробігти крізь вогонь", "Стрибнути з вікна будь-якого поверху", "Сховатися в шафі або під ліжком"], correct: 0 }
+        ];
+
+        // ================= ЗМІННІ СТАНУ =================
+        let studentName = "";
+        let studentGroup = "";
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let violations = 0;
+        let timeLeft = 12;
+        let timerInterval = null;
+        let testStarted = false;
+        let testFinished = false;
+
+        // ================= УТИЛІТИ =================
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('violation-toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function recordViolation(reason) {
+            if (testFinished || !testStarted) return;
+            violations++;
+            showToast(`⚠️ Порушення: ${reason} (${violations}/3)`);
+            if (violations >= 3) {
+                finishTest(true);
+            }
+        }
+
+        // ================= АНТИ-ЧІТ =================
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && testStarted && !testFinished) {
+                recordViolation('Перемикання вкладки');
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && testStarted && !testFinished) {
+                recordViolation('Вихід з повноекранного режиму');
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (!testStarted || testFinished) return;
+            const forbiddenKeys = ['F12', 'PrintScreen'];
+            const isCtrlCombo = e.ctrlKey && ['c', 'v', 'u', 's', 'C', 'V', 'U', 'S'].includes(e.key);
+            const isDevTools = e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'i', 'j', 'c'].includes(e.key);
+            
+            if (forbiddenKeys.includes(e.key) || isCtrlCombo || isDevTools) {
+                e.preventDefault();
+                recordViolation('Використання заборонених клавіш');
+            }
+        });
+
+        document.addEventListener('contextmenu', (e) => {
+            if (testStarted && !testFinished) {
+                e.preventDefault();
+                recordViolation('Правий клік миші');
+            }
+        });
+
+        // ================= ЛОГІКА ТЕСТУ =================
+        function checkPreviousAttempt(name, group) {
+            const key = `bz_fire_safety_${name.trim().toLowerCase()}_${group.trim().toLowerCase()}`;
+            const record = localStorage.getItem(key);
+            if (record) {
+                const data = JSON.parse(record);
+                const prevDiv = document.getElementById('previous-attempt');
+                prevDiv.innerHTML = `
+                    <p style="color: #e74c3c; font-weight: bold; margin: 0 0 10px 0;">⛔ Ви вже проходили цей тест!</p>
+                    <p style="margin: 5px 0;"><strong>Дата:</strong> ${data.date}</p>
+                    <p style="margin: 5px 0;"><strong>Оцінка:</strong> ${data.grade}/5 (Результат: ${data.score}/25)</p>
+                    <p style="margin: 5px 0; color: #7f8c8d;">Повторне проходження на цьому пристрої заблоковано.</p>
+                `;
+                prevDiv.classList.remove('hidden');
+                document.getElementById('start-btn').disabled = true;
+                return true;
+            }
+            return false;
+        }
+
+        function startTest() {
+            const nameInput = document.getElementById('student-name').value.trim();
+            const groupInput = document.getElementById('student-group').value.trim();
+
+            if (!nameInput || !groupInput) {
+                alert('Будь ласка, введіть ПІБ та групу');
+                return;
+            }
+
+            if (checkPreviousAttempt(nameInput, groupInput)) return;
+
+            studentName = nameInput;
+            studentGroup = groupInput;
+
+            // Підготовка питань
+            currentQuestions = questionsData.map(q => {
+                let opts = q.options.map((opt, idx) => ({ text: opt, isCorrect: idx === q.correct }));
+                return { q: q.q, options: shuffleArray(opts) };
+            });
+            currentQuestions = shuffleArray(currentQuestions);
+
+            // Перехід у повноекранний режим
+            document.documentElement.requestFullscreen().catch(err => {
+                console.log("Fullscreen error:", err);
+            });
+
+            // UI перемикання
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('test-screen').classList.remove('hidden');
+
+            testStarted = true;
+            testFinished = false;
+            score = 0;
+            currentQuestionIndex = 0;
+            violations = 0;
+
+            renderQuestion();
+            startTimer();
+        }
+
+        function renderQuestion() {
+            const qData = currentQuestions[currentQuestionIndex];
+            document.getElementById('progress-text').textContent = `Питання ${currentQuestionIndex + 1} з ${currentQuestions.length}`;
+            document.getElementById('progress-bar').style.width = `${((currentQuestionIndex) / currentQuestions.length) * 100}%`;
+            document.getElementById('question-text').textContent = qData.q;
+            
+            const optsContainer = document.getElementById('options-container');
+            optsContainer.innerHTML = '';
+            
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt.text;
+                btn.onclick = () => selectOption(idx);
+                optsContainer.appendChild(btn);
+            });
+        }
+
+        function startTimer() {
+            timeLeft = 12;
+            updateTimerDisplay();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    nextQuestion(); // Час вичерпано, рахується як неправильна
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `Час: ${timeLeft} с`;
+            if (timeLeft < 5) {
+                timerEl.classList.add('timer-warning');
+            } else {
+                timerEl.classList.remove('timer-warning');
+            }
+        }
+
+        function selectOption(optionIndex) {
+            if (testFinished) return;
+            
+            if (currentQuestions[currentQuestionIndex].options[optionIndex].isCorrect) {
+                score++;
+            }
+            
+            // Не показуємо правильну відповідь, одразу переходимо далі
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < currentQuestions.length) {
+                renderQuestion();
+                startTimer();
+            } else {
+                finishTest(false);
+            }
+        }
+
+        function calculateGrade(s) {
+            if (s >= 23) return 5;
+            if (s >= 19) return 4;
+            if (s >= 15) return 3;
+            if (s >= 10) return 2;
+            return 1;
+        }
+
+        function finishTest(forcedZero = false) {
+            testFinished = true;
+            clearInterval(timerInterval);
+            
+            let finalScore = score;
+            let finalGrade = calculateGrade(finalScore);
+            
+            if (forcedZero || violations >= 3) {
+                finalScore = 0;
+                finalGrade = 0;
+            }
+            
+            // Збереження в localStorage
+            const key = `bz_fire_safety_${studentName.trim().toLowerCase()}_${studentGroup.trim().toLowerCase()}`;
+            const dateStr = new Date().toLocaleString('uk-UA');
+            localStorage.setItem(key, JSON.stringify({
+                date: dateStr,
+                score: finalScore,
+                grade: finalGrade
+            }));
+            
+            // Відправка в Telegram
+            const message = `📝 Результат тесту: Пожежна безпека\n👤 ПІБ: ${studentName}\n🏫 Група: ${studentGroup}\n📅 Дата: ${dateStr}\n✅ Результат: ${finalScore}/25\n🎯 Оцінка: ${finalGrade}/5\n⚠️ Порушень: ${violations}`;
+            
+            const telegramUrl = `https://api.telegram.org/bot8977852457:AAH1jJz54Wb5WFxNn1CrpBlRKbML7Pf_2zs/sendMessage?chat_id=622617127&text=${encodeURIComponent(message)}`;
+            
+            fetch(telegramUrl).catch(err => console.error("Помилка відправки в Telegram:", err));
+            
+            // Показ результатів
+            document.getElementById('test-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            document.getElementById('res-name').textContent = studentName;
+            document.getElementById('res-group').textContent = studentGroup;
+            document.getElementById('res-date').textContent = dateStr;
+            document.getElementById('res-score').textContent = `${finalScore}/25`;
+            
+            const gradeEl = document.getElementById('res-grade');
+            gradeEl.textContent = `${finalGrade}/5`;
+            gradeEl.className = `grade-${finalGrade}`;
+            
+            document.getElementById('res-violations').textContent = violations;
+            
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+
+        // ================= ІНІЦІАЛІЗАЦІЯ =================
+        document.getElementById('start-btn').addEventListener('click', startTest);
+    </script>
+</body>
+</html>
